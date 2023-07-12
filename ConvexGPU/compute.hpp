@@ -100,7 +100,6 @@ void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vec
 
     outside.clear();
     outside = Noutside;
-    std::cout << "GPU:" << outside.size() << "/" << inside.size() << std::endl;
 }
 
 Vertex* GetFurthestPointGPU(ComputeShader shader, std::vector<Plane> &polyhedron, std::vector<Vertex*> &outside)

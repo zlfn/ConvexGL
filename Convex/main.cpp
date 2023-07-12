@@ -60,7 +60,7 @@ int main() {
     std::mt19937 gen(rd());
     std::normal_distribution<double> dist(0.0f, 1.0f);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "ConvexHull", NULL, NULL);
     glfwMakeContextCurrent(window);
     if (window == nullptr)
         return -1;
@@ -82,7 +82,7 @@ int main() {
     glLineWidth(5.0f);
 
     //정점 초기화 코드 시작
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 100000000; i++)
     {
         Vertex p = Vertex(glm::vec3(dist(gen), dist(gen), dist(gen)), i);
         points.push_back(p);
@@ -90,10 +90,26 @@ int main() {
     for(Vertex& p : points)
         outside.push_back(&p);
 
+    std::cout << "Generated Points" << std::endl;
+
 
     //Convex Hull 시작
+    double startTime = glfwGetTime();
+
     CreateSimplex(polyhedron, points);
-    DivideOutside(polyhedron, inside, outside);
+    //DivideOutside(polyhedron, inside, outside);
+
+    while(true)
+    {
+        if(outside.empty()) break;
+        DivideOutside(polyhedron, inside, outside);
+
+        Vertex* FP = GetFurthestPoint(polyhedron, outside);
+        NextPolyhedron(polyhedron, *FP, *inside[0]);
+    }
+
+    double endTime = glfwGetTime();
+    std::cout << endTime - startTime << std::endl;
 
     for(Vertex p : points)
     {
@@ -172,13 +188,13 @@ int main() {
 
             DivideOutside(polyhedron, inside, outside);
 
-            //vertices.clear();
+            vertices.clear();
             lines.clear();
             planes.clear();
 
             for(Vertex p : points)
             {
-                //p.draw(vertices);
+                p.draw(vertices);
             }
 
             for(Plane p : polyhedron)
@@ -222,7 +238,7 @@ int main() {
         glm::dvec3 cam(camX, 0.0f, camZ);
         shader.setUniformDvec3("camPos", cam);
 
-        glPointSize(3.0f);
+        glPointSize(1.0f);
         glBindVertexArray(VAO1);
         glDrawArrays(GL_POINTS, 0, vertices.size() / 6);
 

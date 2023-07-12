@@ -277,7 +277,6 @@ void DivideOutside(std::vector<Plane> &polyhedron, std::vector<Vertex*> &inside,
 
     outside.clear();
     outside = Noutside;
-    std::cout << outside.size() << " " << inside.size() << std::endl;
 }
 
 Vertex* GetFurthestPoint(std::vector<Plane> &polyhedron, std::vector<Vertex*> &outside)

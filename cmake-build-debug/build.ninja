@@ -56,12 +56,12 @@ build CMakeFiles/Convex.dir/glad.c.o: C_COMPILER__Convex_Debug /home/zlfn/CLionP
   OBJECT_DIR = CMakeFiles/Convex.dir
   OBJECT_FILE_DIR = CMakeFiles/Convex.dir
 
-build CMakeFiles/Convex.dir/Convex/main.cpp.o: CXX_COMPILER__Convex_Debug /home/zlfn/CLionProjects/Convex/Convex/main.cpp || cmake_object_order_depends_target_Convex
-  DEP_FILE = CMakeFiles/Convex.dir/Convex/main.cpp.o.d
+build CMakeFiles/Convex.dir/ConvexGPU/main.cpp.o: CXX_COMPILER__Convex_Debug /home/zlfn/CLionProjects/Convex/ConvexGPU/main.cpp || cmake_object_order_depends_target_Convex
+  DEP_FILE = CMakeFiles/Convex.dir/ConvexGPU/main.cpp.o.d
   FLAGS = -g -fdiagnostics-color=always
   INCLUDES = -I/home/zlfn/CLionProjects/Convex/include
   OBJECT_DIR = CMakeFiles/Convex.dir
-  OBJECT_FILE_DIR = CMakeFiles/Convex.dir/Convex
+  OBJECT_FILE_DIR = CMakeFiles/Convex.dir/ConvexGPU
 
 
 # =============================================================================
@@ -71,7 +71,7 @@ build CMakeFiles/Convex.dir/Convex/main.cpp.o: CXX_COMPILER__Convex_Debug /home/
 #############################################
 # Link the executable Convex
 
-build Convex: CXX_EXECUTABLE_LINKER__Convex_Debug CMakeFiles/Convex.dir/glad.c.o CMakeFiles/Convex.dir/Convex/main.cpp.o
+build Convex: CXX_EXECUTABLE_LINKER__Convex_Debug CMakeFiles/Convex.dir/glad.c.o CMakeFiles/Convex.dir/ConvexGPU/main.cpp.o
   FLAGS = -g
   LINK_LIBRARIES = -lglfw  -lGL  -lX11  -lpthread  -lXrandr  -lXi  -ldl
   OBJECT_DIR = CMakeFiles/Convex.dir
