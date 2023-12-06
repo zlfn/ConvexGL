@@ -20,5 +20,5 @@ link_libraries(
 add_executable(
         Convex
         glad.c
-        ConvexGPU/draw.hpp ConvexGPU/geometry.hpp
-        ConvexGPU/compute.hpp ConvexGPU/main.cpp)
+        Convex/draw.hpp Convex/geometry.hpp Convex/compute.hpp
+        Convex/main.cpp)

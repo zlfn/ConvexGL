@@ -9,7 +9,13 @@
 //ETC
 #include <random>
 #include "geometry.hpp"
+#include "compute.hpp"
 #include "custom/shader.hpp"
+
+#define NUMBER_OF_VERTEX 5000000
+#define USE_GPU false
+#define MANUAL_STEP false
+#define PRE_CALCULATE true
 
 //Window 변수
 int winWidth = 800;
@@ -81,8 +87,18 @@ int main() {
     glPointSize(5.0f);
     glLineWidth(5.0f);
 
+    int size;
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &size);
+    std::cout << "Max Size of WorkGroupX: " << size << std::endl;
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &size);
+    std::cout << "Max Size of WorkGroupY: " << size << std::endl;
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &size);
+    std::cout << "Max Size of WorkGroupZ: " << size << std::endl;
+    glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &size);
+    std::cout << "Max Size of SSBO: " << size/1024/1024 << "MB" << std::endl;
+
     //정점 초기화 코드 시작
-    for(int i = 0; i < 100000000; i++)
+    for(int i = 0; i < NUMBER_OF_VERTEX; i++)
     {
         Vertex p = Vertex(glm::vec3(dist(gen), dist(gen), dist(gen)), i);
         points.push_back(p);
@@ -94,22 +110,46 @@ int main() {
 
 
     //Convex Hull 시작
-    double startTime = glfwGetTime();
 
     CreateSimplex(polyhedron, points);
-    //DivideOutside(polyhedron, inside, outside);
 
-    while(true)
-    {
-        if(outside.empty()) break;
+    ComputeShader disShader("Convex/shader/distance.comp");
+
+    if(USE_GPU)
+        DivideOutsideGPU(disShader, polyhedron, inside, outside);
+    else
         DivideOutside(polyhedron, inside, outside);
 
-        Vertex* FP = GetFurthestPoint(polyhedron, outside);
-        NextPolyhedron(polyhedron, *FP, *inside[0]);
+    double startTime = glfwGetTime();
+
+    if(PRE_CALCULATE)
+    {
+        while(true)
+        {
+            if(outside.empty())
+            {
+                double endTime = glfwGetTime();
+                std::cout << endTime - startTime << std::endl;
+                break;
+            }
+
+            Vertex* FP;
+            if(USE_GPU)
+            {
+                FP = GetFurthestPointGPU(disShader, polyhedron, outside);
+                NextPolyhedron(polyhedron, *FP, *inside[0]);
+                DivideOutsideGPU(disShader, polyhedron, inside, outside);
+            }
+            else
+            {
+                FP = GetFurthestPoint(polyhedron, outside);
+                NextPolyhedron(polyhedron, *FP, *inside[0]);
+                DivideOutside(polyhedron, inside, outside);
+
+            }
+        }
     }
 
-    double endTime = glfwGetTime();
-    std::cout << endTime - startTime << std::endl;
 
     for(Vertex p : points)
     {
@@ -165,6 +205,10 @@ int main() {
     Shader shader("Convex/shader/vertex.vert",
                  "Convex/shader/fragment.frag");
 
+    bool finished = false;
+
+    startTime = glfwGetTime();
+
     //렌더링 사이클 시작
     while(!glfwWindowShouldClose(window))
     {
@@ -172,21 +216,33 @@ int main() {
         processInput(window);
 
         //계산 처리
-        if(getNext && detachedNext)
+        if((!MANUAL_STEP || (getNext && detachedNext)) && !finished && !PRE_CALCULATE) //getNext && detachedNext
         {
             getNext = detachedNext = false;
 
             if(outside.empty())
             {
-                std::cout << "FULL" << std::endl;
+                double endTime = glfwGetTime();
+                std::cout << endTime - startTime << std::endl;
+                finished = true;
                 goto SKIP;
             }
 
 
-            Vertex* FP = GetFurthestPoint(polyhedron, outside);
-            NextPolyhedron(polyhedron, *FP, *inside[0]);
+            Vertex* FP;
+            if(USE_GPU)
+            {
+                FP = GetFurthestPointGPU(disShader, polyhedron, outside);
+                NextPolyhedron(polyhedron, *FP, *inside[0]);
+                DivideOutsideGPU(disShader, polyhedron, inside, outside);
+            }
+            else
+            {
+                FP = GetFurthestPoint(polyhedron, outside);
+                NextPolyhedron(polyhedron, *FP, *inside[0]);
+                DivideOutside(polyhedron, inside, outside);
+            }
 
-            DivideOutside(polyhedron, inside, outside);
 
             vertices.clear();
             lines.clear();
@@ -238,7 +294,7 @@ int main() {
         glm::dvec3 cam(camX, 0.0f, camZ);
         shader.setUniformDvec3("camPos", cam);
 
-        glPointSize(1.0f);
+        glPointSize(3.0f);
         glBindVertexArray(VAO1);
         glDrawArrays(GL_POINTS, 0, vertices.size() / 6);
 

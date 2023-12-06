@@ -1,3 +1,3 @@
-/home/zlfn/CLionProjects/Convex/cmake-build-debug/CMakeFiles/Convex.dir
-/home/zlfn/CLionProjects/Convex/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/zlfn/CLionProjects/Convex/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/zlfn/Jetbrains/CLionProjects/Convex/cmake-build-debug/CMakeFiles/Convex.dir
+/home/zlfn/Jetbrains/CLionProjects/Convex/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/zlfn/Jetbrains/CLionProjects/Convex/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -23,6 +23,7 @@ struct VertexE
 };
 
 
+// 두 점 사이의 거리를 구하는 것을 GPU로 가속
 void getDistanceGPU(ComputeShader shader, std::vector<Plane> p, std::vector<Vertex*> v, std::vector<double> &o)
 {
     std::vector<PlaneE> pe;
@@ -68,6 +69,7 @@ void getDistanceGPU(ComputeShader shader, std::vector<Plane> p, std::vector<Vert
         }
 }
 
+// 특정 평면 외부/내부 판별을 GPU를 이용하여 가속
 void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vector<Vertex*> &inside, std::vector<Vertex*> &outside)
 {
     std::vector<bool> mark(outside.size(), false);
@@ -102,6 +104,7 @@ void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vec
     outside = Noutside;
 }
 
+// 최원점 찾기를 GPU를 이용해 가속
 Vertex* GetFurthestPointGPU(ComputeShader shader, std::vector<Plane> &polyhedron, std::vector<Vertex*> &outside)
 {
     int mp = 0;
