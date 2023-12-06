@@ -90,12 +90,12 @@ void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vec
     {
         if(mark[i])
         {
-            outside[i]->color = ORANGE;
+            outside[i]->color = RED;
             Noutside.push_back(outside[i]);
         }
         else
         {
-            outside[i]->color = LIGHT_BLUE;
+            outside[i]->color = GREEN;
             inside.push_back(outside[i]);
         }
     }
