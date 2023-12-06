@@ -12,10 +12,10 @@
 #include "compute.hpp"
 #include "custom/shader.hpp"
 
-#define NUMBER_OF_VERTEX 5000000
-#define USE_GPU false
-#define MANUAL_STEP false
-#define PRE_CALCULATE true
+const int NUMBER_OF_VERTEX = 5000000;
+const bool USE_GPU = false;
+const bool MANUAL_STEP = false;
+const bool PRE_CALCULATE = true;
 
 //Window 변수
 int winWidth = 800;
