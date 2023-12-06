@@ -7,8 +7,11 @@ GPGPU를 이용한 3D Convex Hull과 응용.
 ### 실행 방법
 * 소스코드의 실행을 위해 GLAD, GLM을 include 폴더 안에, `glad.c`를 루트폴더에 추가해야 합니다.
   * [glm 다운로드](https://github.com/g-truc/glm), [glad 다운로드](https://glad.dav1d.de/)
-* Convex 폴더의 main.cpp를 실행하면 CPU를 통해 ConvexHull을 만들게 됩니다.
-* ConvexGPU 폴더의 main.cpp를 실행하면 GPU를 통해 ConvexHull을 만들게 됩니다.
+* main.cpp의 상수를 통해 프로그램의 실행을 설정할 수 있습니다.
+  * NUMBER_OF_VERTEX : Convex Hull을 구성할 정점의 개수
+  * USE_GPU : Convex Hull에 GPGPU 사용 여부
+  * MANUAL_STEP : 단계를 수동으로 넘김
+  * PRE_CALCULATE : 렌더링 전에 Convex Hull 계산을 끝냄
 
 ### 연구 결과
 * [상반기 보고서](Report.pdf)
