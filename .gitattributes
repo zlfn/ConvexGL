@@ -1,5 +1,0 @@
-include/glad/* linguist-vendored
-include/glm/* linguist-vendored
-include/KHR/* linguist-vendored
-glad.c linguist-vendored
-
