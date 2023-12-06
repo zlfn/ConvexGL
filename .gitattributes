@@ -1,6 +1,6 @@
 *.comp linguist-language=GLSL
 
-include/glad/* linguist-vendored
-include/glm/* linguist-vendored
-include/KHR/* linguist-vendored
-glad.c llinguist-vendored
+include/glad/* linguist-detectable=false
+include/glm/* linguist-detectable=false
+include/KHR/* linguist-detectable=false
+glad.c linguist-detectable=false
