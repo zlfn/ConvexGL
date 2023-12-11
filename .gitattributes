@@ -1,6 +1,13 @@
+*.vert linguist-language=GLSL
+*.frag linguist-language=GLSL
 *.comp linguist-language=GLSL
 
-include/glad/* linguist-vendored
-include/glm/* linguist-vendored
-include/KHR/* linguist-vendored
-glad.c linguist-vendored
+include/glad/* linguist-vendored=true
+include/glm/* linguist-vendored=true
+include/glm/detail/* linguist-vendored=true
+include/glm/ext/* linguist-vendored=true
+include/glm/gtc/* linguist-vendored=true
+include/glm/gtx/* linguist-vendored=true
+include/glm/simd/* linguist-vendored=true
+include/KHR/* linguist-vendored=true
+glad.c linguist-vendored=true
