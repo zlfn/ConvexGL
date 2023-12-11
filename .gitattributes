@@ -1,3 +1,5 @@
+*.vert linguist-language=GLSL
+*.frag linguist-language=GLSL
 *.comp linguist-language=GLSL
 
 include/glad/* linguist-vendored=true
