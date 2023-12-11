@@ -24,7 +24,7 @@ struct VertexE
 
 
 // 두 점 사이의 거리를 구하는 것을 GPU로 가속
-void getDistanceGPU(ComputeShader shader, std::vector<Plane> p, std::vector<Vertex*> v, std::vector<double> &o)
+void getDistanceGPU(ComputeShader shader, std::vector<Plane> &p, std::vector<Vertex*> &v, std::vector<double> &o)
 {
     std::vector<PlaneE> pe;
     for(Plane pl : p)
@@ -32,7 +32,7 @@ void getDistanceGPU(ComputeShader shader, std::vector<Plane> p, std::vector<Vert
     std::vector<VertexE> ve;
     for(Vertex* vl : v)
         ve.push_back(VertexE{vl->x, vl->y, vl->z});
-    std::vector<double> gpubuf(v.size(), 0);
+    std::vector<double> gpubuf(p.size() * v.size(), 0);
 
     unsigned buf_vertex;
     glGenBuffers(1, &buf_vertex);
@@ -73,16 +73,23 @@ void getDistanceGPU(ComputeShader shader, std::vector<Plane> p, std::vector<Vert
 void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vector<Vertex*> &inside, std::vector<Vertex*> &outside, Color color1, Color color2)
 {
     std::vector<bool> mark(outside.size(), false);
-    std::vector<double> out(outside.size(), 0);
+    std::vector<double> out(polyhedron.size() * outside.size(), 0);
 
-    for(int i = 0; i < polyhedron.size(); i++)
+    /*for(int i = 0; i < polyhedron.size(); i++)
     {
-        getDistanceGPU(cs, std::vector<Plane>{polyhedron[i]}, outside, out);
+        std::vector<Plane> temp = std::vector<Plane>{polyhedron[i]};
+        getDistanceGPU(cs, temp, outside, out);
         for(int j = 0; j < outside.size(); j++)
         {
             if(out[j] > ZERO)
                 mark[j] = true;
-        }
+        }*/
+
+    getDistanceGPU(cs, polyhedron, outside, out);
+    for(int i = 0; i < out.size(); i++)
+    {
+        if(out[i] > ZERO)
+            mark[i % outside.size()] = true;
     }
 
     std::vector<Vertex*> Noutside;
@@ -109,10 +116,23 @@ Vertex* GetFurthestPointGPU(ComputeShader shader, std::vector<Plane> &polyhedron
 {
     int mp = 0;
     int mv = 0;
-    double maxDis = polyhedron[mp].getDistance(*outside[mv]);
-    std::vector<double> out(outside.size());
 
-    for(int i = 0; i < polyhedron.size(); i++)
+    double maxDis = polyhedron[mp].getDistance(*outside[mv]);
+    std::vector<double> out(polyhedron.size() * outside.size());
+
+    getDistanceGPU(shader, polyhedron, outside, out);
+
+    for(int i = 0; i < out.size(); i++)
+    {
+        if(out[i] > maxDis)
+        {
+            mv = i % outside.size();
+            maxDis = out[i];
+        }
+    }
+
+
+    /*for(int i = 0; i < polyhedron.size(); i++)
     {
         getDistanceGPU(shader, std::vector<Plane>{polyhedron[i]}, outside, out);
         for(int j = 0; j < outside.size(); j++)
@@ -123,8 +143,7 @@ Vertex* GetFurthestPointGPU(ComputeShader shader, std::vector<Plane> &polyhedron
                 maxDis = out[j];
             }
         }
-
-    }
+    }*/
 
     return outside[mv];
 }

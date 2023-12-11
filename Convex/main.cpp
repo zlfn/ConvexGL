@@ -16,7 +16,7 @@
 const int NUMBER_OF_VERTEX = 1000000;
 const bool USE_GPU = true;
 const bool MANUAL_STEP = false;
-const bool PRE_CALCULATE = false;
+const bool PRE_CALCULATE = true;
 
 //Appearance
 const Color BACKGROUND_COLOR = DARK_MINT;
@@ -121,10 +121,17 @@ int main() {
 
     //Convex Hull 시작
     double startTime = glfwGetTime();
-
-    CreateSimplex(polyhedron, points, PLANE_COLOR);
+    double SimplexTime = 0;
+    double GetFurthestTime = 0;
+    double DivideOutsideTime = 0;
+    double NextPolyhedronTime = 0;
 
     ComputeShader disShader("Convex/shader/distance.comp");
+
+    CreateSimplex(polyhedron, points, PLANE_COLOR);
+    double tTime = glfwGetTime();
+    SimplexTime = tTime - startTime;
+
 
     if(USE_GPU)
         if(MANUAL_STEP)
@@ -145,21 +152,35 @@ int main() {
             {
                 double endTime = glfwGetTime();
                 std::cout << endTime - startTime << std::endl;
+                std::cout << SimplexTime + GetFurthestTime + NextPolyhedronTime + DivideOutsideTime << std::endl;
+                std::cout << SimplexTime << std::endl;
+                std::cout << GetFurthestTime << std::endl;
+                std::cout << NextPolyhedronTime << std::endl;
+                std::cout << DivideOutsideTime << std::endl;
                 break;
             }
 
             Vertex* FP;
             if(USE_GPU)
             {
+                double sTime = glfwGetTime();
                 FP = GetFurthestPointGPU(disShader, polyhedron, outside);
-                NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, NEXT_PLANE_COLOR);
-                DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
+                double eTime = glfwGetTime();
+                GetFurthestTime += (eTime - sTime);
+                sTime = glfwGetTime();
+                NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, PLANE_COLOR);
+                eTime = glfwGetTime();
+                NextPolyhedronTime += (eTime - sTime);
+                sTime = glfwGetTime();
+                DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, OUT_VERTEX_COLOR);
+                eTime = glfwGetTime();
+                DivideOutsideTime += (eTime - sTime);
             }
             else
             {
                 FP = GetFurthestPoint(polyhedron, outside);
-                NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, NEXT_PLANE_COLOR);
-                DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
+                NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, PLANE_COLOR);
+                DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, OUT_VERTEX_COLOR);
 
             }
         }
