@@ -70,7 +70,7 @@ void getDistanceGPU(ComputeShader shader, std::vector<Plane> p, std::vector<Vert
 }
 
 // 특정 평면 외부/내부 판별을 GPU를 이용하여 가속
-void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vector<Vertex*> &inside, std::vector<Vertex*> &outside)
+void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vector<Vertex*> &inside, std::vector<Vertex*> &outside, Color color1, Color color2)
 {
     std::vector<bool> mark(outside.size(), false);
     std::vector<double> out(outside.size(), 0);
@@ -90,12 +90,12 @@ void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vec
     {
         if(mark[i])
         {
-            outside[i]->color = RED;
+            outside[i]->color = color1;
             Noutside.push_back(outside[i]);
         }
         else
         {
-            outside[i]->color = GREEN;
+            outside[i]->color = color2;
             inside.push_back(outside[i]);
         }
     }

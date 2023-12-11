@@ -58,6 +58,11 @@ public:
     {
         drawVertex(vec, vertices, color);
     }
+
+    double getDistance(Vertex p)
+    {
+        return glm::sqrt(glm::pow(x - p.x, 2) + glm::pow(y - p.x, 2) + glm::pow(z - p.z, 2));
+    }
 };
 
 bool IDCom(Vertex a, Vertex b){
@@ -249,7 +254,7 @@ public:
 };
 
 //병렬화&효율화
-void DivideOutside(std::vector<Plane> &polyhedron, std::vector<Vertex*> &inside, std::vector<Vertex*> &outside)
+void DivideOutside(std::vector<Plane> &polyhedron, std::vector<Vertex*> &inside, std::vector<Vertex*> &outside, Color color1, Color color2)
 {
     std::vector<Vertex*> Noutside;
     for(Vertex* vertex : outside)
@@ -259,14 +264,14 @@ void DivideOutside(std::vector<Plane> &polyhedron, std::vector<Vertex*> &inside,
         {
             if(p.getDistance(*vertex) > ZERO)
             {
-                vertex->color = ORANGE;
+                vertex->color = color1;
                 Noutside.push_back(vertex);
                 flag = false;
                 break;
             }
             else
             {
-                vertex->color = LIGHT_BLUE;
+                vertex->color = color2;
             }
         }
 
@@ -315,7 +320,7 @@ bool isExist(std::set<K>& s, K key) {
     }
 }
 
-void NextPolyhedron(std::vector<Plane> &polyhedron, Vertex fp, Vertex ip)
+void NextPolyhedron(std::vector<Plane> &polyhedron, Vertex fp, std::vector<Vertex*> &ip, Color color1, Color color2)
 {
     std::set<std::pair<int, int>> hiddenEdge;
     std::vector<Line> borderLine;
@@ -324,10 +329,10 @@ void NextPolyhedron(std::vector<Plane> &polyhedron, Vertex fp, Vertex ip)
     for(Plane p : polyhedron)
         if(not CheckVisible(p, fp))
         {
-            p.color = MINT;
-            p.edge[0].color = MINT;
-            p.edge[1].color = MINT;
-            p.edge[2].color = MINT;
+            p.color = color1;
+            p.edge[0].color = color1;
+            p.edge[1].color = color1;
+            p.edge[2].color = color1;
             nPolyhedron.push_back(p);
 
             hiddenEdge.insert(std::pair(p.edge[0].point[0].ID, p.edge[0].point[1].ID));
@@ -351,73 +356,58 @@ void NextPolyhedron(std::vector<Plane> &polyhedron, Vertex fp, Vertex ip)
 
     for(Line l : borderLine)
     {
-        Plane p = Plane(l.point[0], l.point[1], fp, YELLOW);
-        if(p.getDistance(ip) > ZERO)
-            p = Plane(fp, l.point[1], l.point[0], YELLOW);
+        Plane p = Plane(l.point[0], l.point[1], fp, color2);
+
+        int i = 0;
+    while(-ZERO < p.getDistance(*ip[i]) && p.getDistance(*ip[i]) < ZERO)
+            i++;
+
+        if(p.getDistance(*ip[i]) > ZERO)
+            p = Plane(fp, l.point[1], l.point[0], color2);
         polyhedron.push_back(p);
     }
 }
 
 //QuickHull을 시작할 4면체 Simplex를 구성
-void CreateSimplex(std::vector<Plane> &polyhedron, std::vector<Vertex> &p)
+void CreateSimplex(std::vector<Plane> &polyhedron, std::vector<Vertex> &p, Color color)
 {
-    std::vector<int> ci = {0, 0, 0, 0, 0, 0};
-    std::vector<int> pi = {0, 1, 0, 0};
+    std::vector<int> pi = {0, 0, 0, 0};
 
     for(int i = 0; i < p.size(); i++)
-    {
-        if(p[i].x > p[ci[0]].x)
-            ci[0] = i;
-        if(p[i].x < p[ci[1]].x)
-            ci[1] = i;
-        if(p[i].y > p[ci[2]].y)
-            ci[2] = i;
-        if(p[i].y < p[ci[3]].y)
-            ci[3] = i;
-        if(p[i].z > p[ci[4]].z)
-            ci[4] = i;
-        if(p[i].z < p[ci[5]].z)
-            ci[5] = i;
-    }
+        if(p[i].x > p[pi[0]].x)
+            pi[0] = i;
 
-    ci.erase(unique(ci.begin(), ci.end()), ci.end());
+    for(int i = 0; i < p.size(); i++)
+        if(p[pi[0]].getDistance(p[i]) > p[pi[0]].getDistance(p[pi[1]]))
+            pi[1] = i;
 
-    pi[0] = ci[0]; pi[1] = ci[1];
     Line firstLine = Line(p[pi[0]], p[pi[1]]);
-    int maxIndex = ci[2];
-    for(int i = 3; i < ci.size(); i++)
-    {
-        if(firstLine.getDistance(p[ci[i]]) > firstLine.getDistance(p[maxIndex]))
-            maxIndex = ci[i];
-    }
-    pi[2] = maxIndex;
+    for(int i = 0; i < p.size(); i++)
+        if(firstLine.getDistance(p[i]) > firstLine.getDistance(p[pi[2]]))
+            pi[2] = i;
 
-    Plane firstPlane = Plane(p[pi[0]], p[pi[1]], p[pi[2]], MINT);
-    maxIndex = ci[2];
-    for (int i = 3; i < ci.size(); i++)
-    {
-        if(firstPlane.getAbsDistance(p[ci[i]]) > firstPlane.getAbsDistance(p[maxIndex]))
-            maxIndex = ci[i];
-    }
-    pi[3] = maxIndex;
+    Plane firstPlane = Plane(p[pi[0]], p[pi[1]], p[pi[2]], color);
+    for(int i = 0; i < p.size(); i++)
+        if(firstPlane.getAbsDistance(p[i]) > firstPlane.getAbsDistance(p[pi[3]]))
+            pi[3] = i;
 
-    Plane plane = Plane(p[pi[0]], p[pi[1]], p[pi[2]], MINT);
+    Plane plane = Plane(p[pi[0]], p[pi[1]], p[pi[2]], color);
     if(plane.getDistance(p[pi[3]]) > 0)
-        plane = Plane(p[pi[2]], p[pi[1]], p[pi[0]], MINT);
+        plane = Plane(p[pi[2]], p[pi[1]], p[pi[0]], color);
     polyhedron.push_back(plane);
 
-    plane = Plane(p[pi[0]], p[pi[1]], p[pi[3]], MINT);
+    plane = Plane(p[pi[0]], p[pi[1]], p[pi[3]], color);
     if(plane.getDistance(p[pi[2]]) > 0)
-        plane = Plane(p[pi[3]], p[pi[1]], p[pi[0]], MINT);
+        plane = Plane(p[pi[3]], p[pi[1]], p[pi[0]], color);
     polyhedron.push_back(plane);
 
-    plane = Plane(p[pi[0]], p[pi[2]], p[pi[3]], MINT);
+    plane = Plane(p[pi[0]], p[pi[2]], p[pi[3]], color);
     if(plane.getDistance(p[pi[1]]) > 0)
-        plane = Plane(p[pi[3]], p[pi[2]], p[pi[0]], MINT);
+        plane = Plane(p[pi[3]], p[pi[2]], p[pi[0]], color);
     polyhedron.push_back(plane);
 
-    plane = Plane(p[pi[1]], p[pi[2]], p[pi[3]], MINT);
+    plane = Plane(p[pi[1]], p[pi[2]], p[pi[3]], color);
     if(plane.getDistance(p[pi[0]]) > 0)
-        plane = Plane(p[pi[3]], p[pi[2]], p[pi[1]], MINT);
+        plane = Plane(p[pi[3]], p[pi[2]], p[pi[1]], color);
     polyhedron.push_back(plane);
 }

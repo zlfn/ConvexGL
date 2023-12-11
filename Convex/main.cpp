@@ -12,10 +12,20 @@
 #include "compute.hpp"
 #include "custom/shader.hpp"
 
-const int NUMBER_OF_VERTEX = 5000000;
-const bool USE_GPU = false;
+//Config
+const int NUMBER_OF_VERTEX = 1000000;
+const bool USE_GPU = true;
 const bool MANUAL_STEP = false;
-const bool PRE_CALCULATE = true;
+const bool PRE_CALCULATE = false;
+
+//Appearance
+const Color BACKGROUND_COLOR = DARK_MINT;
+const Color PLANE_COLOR = MINT;
+const Color NEXT_PLANE_COLOR = YELLOW;
+const Color IN_VERTEX_COLOR = LIGHT_BLUE;
+const Color OUT_VERTEX_COLOR = ORANGE;
+const double POINT_SIZE = 3.0f;
+const double LINE_WIDTH = 0.3f;
 
 //Window 변수
 int winWidth = 800;
@@ -39,7 +49,7 @@ glm::dvec3 cameraPos = glm::dvec3(0.0f, 0.0f, 3.0f);
 glm::dvec3 cameraFront = glm::dvec3(0.0f, 0.0f, -1.0f);
 glm::dvec3 cameraUp = glm::dvec3(0.0f, 1.0f, 0.0f);
 double yaw = -90.0f, pitch = 0.0f;
-double camRadius = 13.0f;
+double camRadius = -15.0f; //왜 마이너스지
 
 //입력 처리용 DeltaTime
 double deltaTime = 0.0f;
@@ -74,7 +84,7 @@ int main() {
         return -1;
 
     glViewport(0, 0, winWidth, winHeight);
-    glClearColor(0.4f, 0.5f, 0.5f, 1.0f);
+    std::apply(glClearColor, getColor(BACKGROUND_COLOR));
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -84,8 +94,8 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glPointSize(5.0f);
-    glLineWidth(5.0f);
+    glPointSize(POINT_SIZE);
+    glLineWidth(LINE_WIDTH);
 
     int size;
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &size);
@@ -110,17 +120,22 @@ int main() {
 
 
     //Convex Hull 시작
+    double startTime = glfwGetTime();
 
-    CreateSimplex(polyhedron, points);
+    CreateSimplex(polyhedron, points, PLANE_COLOR);
 
     ComputeShader disShader("Convex/shader/distance.comp");
 
     if(USE_GPU)
-        DivideOutsideGPU(disShader, polyhedron, inside, outside);
+        if(MANUAL_STEP)
+            DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
+        else
+            DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, OUT_VERTEX_COLOR);
     else
-        DivideOutside(polyhedron, inside, outside);
-
-    double startTime = glfwGetTime();
+        if(MANUAL_STEP)
+            DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
+        else
+            DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, OUT_VERTEX_COLOR);
 
     if(PRE_CALCULATE)
     {
@@ -137,14 +152,14 @@ int main() {
             if(USE_GPU)
             {
                 FP = GetFurthestPointGPU(disShader, polyhedron, outside);
-                NextPolyhedron(polyhedron, *FP, *inside[0]);
-                DivideOutsideGPU(disShader, polyhedron, inside, outside);
+                NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, NEXT_PLANE_COLOR);
+                DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
             }
             else
             {
                 FP = GetFurthestPoint(polyhedron, outside);
-                NextPolyhedron(polyhedron, *FP, *inside[0]);
-                DivideOutside(polyhedron, inside, outside);
+                NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, NEXT_PLANE_COLOR);
+                DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
 
             }
         }
@@ -215,52 +230,6 @@ int main() {
         //입력 처리
         processInput(window);
 
-        //계산 처리
-        if((!MANUAL_STEP || (getNext && detachedNext)) && !finished && !PRE_CALCULATE) //getNext && detachedNext
-        {
-            getNext = detachedNext = false;
-
-            if(outside.empty())
-            {
-                double endTime = glfwGetTime();
-                std::cout << endTime - startTime << std::endl;
-                finished = true;
-                goto SKIP;
-            }
-
-
-            Vertex* FP;
-            if(USE_GPU)
-            {
-                FP = GetFurthestPointGPU(disShader, polyhedron, outside);
-                NextPolyhedron(polyhedron, *FP, *inside[0]);
-                DivideOutsideGPU(disShader, polyhedron, inside, outside);
-            }
-            else
-            {
-                FP = GetFurthestPoint(polyhedron, outside);
-                NextPolyhedron(polyhedron, *FP, *inside[0]);
-                DivideOutside(polyhedron, inside, outside);
-            }
-
-
-            vertices.clear();
-            lines.clear();
-            planes.clear();
-
-            for(Vertex p : points)
-            {
-                p.draw(vertices);
-            }
-
-            for(Plane p : polyhedron)
-            {
-                p.draw(planes);
-                p.drawSkeleton(lines);
-                p.drawNormal(lines);
-            }
-        }
-        SKIP:
 
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO1);
@@ -270,7 +239,7 @@ int main() {
         glBindBuffer(GL_ARRAY_BUFFER, VBO3);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planes.size(), &planes[0], GL_STATIC_DRAW);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        std::apply(glClearColor, getColor(BACKGROUND_COLOR));
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //렌더링 행렬 설정
@@ -294,17 +263,65 @@ int main() {
         glm::dvec3 cam(camX, 0.0f, camZ);
         shader.setUniformDvec3("camPos", cam);
 
-        glPointSize(3.0f);
+        glPointSize(POINT_SIZE);
         glBindVertexArray(VAO1);
         glDrawArrays(GL_POINTS, 0, vertices.size() / 6);
 
-        glLineWidth(1.0f);
+        glLineWidth(LINE_WIDTH);
         glBindVertexArray(VAO2);
         glDrawArrays(GL_LINES, 0, lines.size() / 6);
 
         glBindVertexArray(VAO3);
         glDrawArrays(GL_TRIANGLES, 0, planes.size() / 6);
 
+        //계산 처리
+        if((!MANUAL_STEP || (getNext && detachedNext)) && !finished && !PRE_CALCULATE) //getNext && detachedNext
+        {
+            getNext = detachedNext = false;
+
+            if(outside.empty())
+            {
+                double endTime = glfwGetTime();
+                std::cout << endTime - startTime << std::endl;
+                finished = true;
+                goto SKIP;
+            }
+
+            Vertex* FP;
+            if(USE_GPU)
+            {
+                FP = GetFurthestPointGPU(disShader, polyhedron, outside);
+                NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, NEXT_PLANE_COLOR);
+                DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
+            }
+            else
+            {
+                FP = GetFurthestPoint(polyhedron, outside);
+                NextPolyhedron(polyhedron, *FP, inside, MINT, YELLOW);
+                DivideOutside(polyhedron, inside, outside, ORANGE, LIGHT_BLUE);
+            }
+
+
+            lines.clear();
+            planes.clear();
+
+            if(MANUAL_STEP)
+            {
+                vertices.clear();
+                for(Vertex p : points)
+                {
+                    p.draw(vertices);
+                }
+            }
+
+            for(Plane p : polyhedron)
+            {
+                p.draw(planes);
+                p.drawSkeleton(lines);
+                p.drawNormal(lines);
+            }
+        }
+        SKIP:
 
         //deltaTime 계산
         double currentFrame = glfwGetTime();
