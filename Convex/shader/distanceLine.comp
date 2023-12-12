@@ -1,0 +1,42 @@
+#version 460 core
+
+struct Line
+{
+    double x;
+    double y;
+    double z;
+    double dx;
+    double dy;
+    double dz;
+};
+
+struct Vertex
+{
+    double x;
+    double y;
+    double z;
+};
+
+layout (local_size_x = 1) in;
+
+layout (binding = 0) coherent buffer Vertices {
+    Vertex vertices[gl_WorkGroupSize.x];
+};
+
+layout (binding = 1) coherent buffer Lines {
+    Line lines[gl_WorkGroupSize.y];
+};
+
+layout (binding = 2) coherent buffer Output {
+    double outs[gl_WorkGroupSize.y * gl_WorkGroupSize.x];
+};
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    uint idy = gl_GlobalInvocationID.y;
+    uint w = gl_NumWorkGroups.x;
+    Vertex v = vertices[idx];
+    Line l = lines[idy];
+
+    outs[idy * w + idx] =  length(cross(vec3(l.dx, l.dy, l.dz), vec3(v.x-l.x, v.y-l.y, v.z-l.z))) / length(vec3(l.dx, l.dy, l.dz));
+}

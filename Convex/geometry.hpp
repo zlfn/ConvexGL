@@ -112,7 +112,7 @@ public:
         color = c;
     }
 
-    float getDistance(Vertex p)
+    double getDistance(Vertex p)
     {
         return glm::length(glm::cross(point[1].vec-point[0].vec, point[0].vec-p.vec)) / glm::length(point[1].vec-point[0].vec);
     }
@@ -227,7 +227,7 @@ public:
     {
         glm::dvec3 center = (point[0].vec + point[1].vec + point[2].vec) / 3.0;
         glm::dvec3 norcen = normal * 0.5 + center;
-        drawLine(center, norcen, vertices, color);
+        //drawLine(center, norcen, vertices, color);
     }
 
     void draw(std::vector<float> &vertices)

@@ -1,0 +1,32 @@
+#version 460 core
+
+struct Vertex
+{
+    double x;
+    double y;
+    double z;
+};
+
+layout (local_size_x = 1) in;
+
+layout (binding = 0) coherent buffer Vertices1 {
+    Vertex vertices1[gl_WorkGroupSize.x];
+};
+
+layout (binding = 1) coherent buffer Vertices2 {
+    Vertex vertices2[gl_WorkGroupSize.y];
+};
+
+layout (binding = 2) coherent buffer Output {
+    double outs[gl_WorkGroupSize.y * gl_WorkGroupSize.x];
+};
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    uint idy = gl_GlobalInvocationID.y;
+    uint w = gl_NumWorkGroups.x;
+    Vertex v1 = vertices1[idx];
+    Vertex v2 = vertices2[idy];
+
+    outs[idy * w + idx] =  sqrt(pow(float(v1.x-v2.x), 2.0) + pow(float(v1.y-v2.y), 2.0) + pow(float(v1.z - v2.z), 2.0));
+}
