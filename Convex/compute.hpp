@@ -75,16 +75,6 @@ void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vec
     std::vector<bool> mark(outside.size(), false);
     std::vector<double> out(polyhedron.size() * outside.size(), 0);
 
-    /*for(int i = 0; i < polyhedron.size(); i++)
-    {
-        std::vector<Plane> temp = std::vector<Plane>{polyhedron[i]};
-        getDistanceGPU(cs, temp, outside, out);
-        for(int j = 0; j < outside.size(); j++)
-        {
-            if(out[j] > ZERO)
-                mark[j] = true;
-        }*/
-
     getDistanceGPU(cs, polyhedron, outside, out);
     for(int i = 0; i < out.size(); i++)
     {
@@ -114,10 +104,9 @@ void DivideOutsideGPU(ComputeShader cs, std::vector<Plane> &polyhedron, std::vec
 // 최원점 찾기를 GPU를 이용해 가속
 Vertex* GetFurthestPointGPU(ComputeShader shader, std::vector<Plane> &polyhedron, std::vector<Vertex*> &outside)
 {
-    int mp = 0;
     int mv = 0;
 
-    double maxDis = polyhedron[mp].getDistance(*outside[mv]);
+    double maxDis = polyhedron[0].getDistance(*outside[mv]);
     std::vector<double> out(polyhedron.size() * outside.size());
 
     getDistanceGPU(shader, polyhedron, outside, out);
@@ -130,20 +119,6 @@ Vertex* GetFurthestPointGPU(ComputeShader shader, std::vector<Plane> &polyhedron
             maxDis = out[i];
         }
     }
-
-
-    /*for(int i = 0; i < polyhedron.size(); i++)
-    {
-        getDistanceGPU(shader, std::vector<Plane>{polyhedron[i]}, outside, out);
-        for(int j = 0; j < outside.size(); j++)
-        {
-            if(out[j] > maxDis)
-            {
-                mp = i; mv = j;
-                maxDis = out[j];
-            }
-        }
-    }*/
 
     return outside[mv];
 }

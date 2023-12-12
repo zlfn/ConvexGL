@@ -47,21 +47,16 @@ std::vector<Vertex*> outside;
 //카메라 벡터
 glm::dvec3 cameraPos = glm::dvec3(0.0f, 0.0f, 3.0f);
 glm::dvec3 cameraFront = glm::dvec3(0.0f, 0.0f, -1.0f);
-glm::dvec3 cameraUp = glm::dvec3(0.0f, 1.0f, 0.0f);
-double yaw = -90.0f, pitch = 0.0f;
 double camRadius = -15.0f; //왜 마이너스지
 
 //입력 처리용 DeltaTime
 double deltaTime = 0.0f;
 double lastFrame = 0.0f;
-double inputInterval = 0.0f;
 
 //입력용 변수
-double lastX = 400, lastY = 300;
 bool getNext = false;
 bool detachedNext = true;
 
-void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
@@ -87,8 +82,6 @@ int main() {
     std::apply(glClearColor, getColor(BACKGROUND_COLOR));
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(window, mouse_callback);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -117,7 +110,6 @@ int main() {
         outside.push_back(&p);
 
     std::cout << "Generated Points" << std::endl;
-
 
     //Convex Hull 시작
     double startTime = glfwGetTime();
@@ -252,7 +244,6 @@ int main() {
         processInput(window);
 
 
-
         glBindBuffer(GL_ARRAY_BUFFER, VBO1);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, VBO2);
@@ -271,7 +262,6 @@ int main() {
         double camX = sin(glfwGetTime()) * camRadius;
         double camZ = cos(glfwGetTime()) * camRadius;
         glm::mat4 view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-        //glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
         ///projection
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)winWidth / (float)winHeight, 0.1f, 100.0f);
@@ -358,32 +348,6 @@ int main() {
     return 0;
 }
 
-void mouse_callback(GLFWwindow* window, double xPos, double yPos)
-{
-    double xOffset = xPos - lastX;
-    double yOffset = lastY - yPos;
-    lastX = xPos;
-    lastY = yPos;
-
-    const double sensitivity = 0.1f;
-    xOffset *= sensitivity;
-    yOffset *= sensitivity;
-
-    yaw += xOffset;
-    pitch += yOffset;
-
-    if(pitch > 89.0f)
-        pitch = 89.0f;
-    if(pitch < -89.0f)
-        pitch = -89.0f;
-
-    glm::dvec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
-}
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     winWidth = width;
@@ -405,14 +369,7 @@ void processInput(GLFWwindow *window)
         camRadius -= cameraSpeed;
     }
     cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraUp;
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraUp;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
