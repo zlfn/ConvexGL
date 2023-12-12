@@ -262,8 +262,6 @@ void CreateSimplexGPU(ComputeShader s1, ComputeShader s2, ComputeShader s3, std:
         if(glm::abs(out[i]) > glm::abs(out[pi[3]]))
             pi[3] = i;
 
-    std::cout << pi[0] << pi[1] << pi[2] << pi[3] << std::endl;
-
     Plane plane = Plane(p[pi[0]], p[pi[1]], p[pi[2]], color);
     if(plane.getDistance(p[pi[3]]) > 0)
         plane = Plane(p[pi[2]], p[pi[1]], p[pi[0]], color);

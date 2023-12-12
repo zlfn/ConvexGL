@@ -13,17 +13,17 @@
 #include "custom/shader.hpp"
 
 //Config
-const int NUMBER_OF_VERTEX = 100000;
+const int NUMBER_OF_VERTEX = 10000000;
 const bool USE_GPU = true;
 const bool MANUAL_STEP = false;
-const bool PRE_CALCULATE = true;
+const bool PRE_CALCULATE = false;
 
 //Appearance
-const Color BACKGROUND_COLOR = DARK_MINT;
-const Color PLANE_COLOR = MINT;
-const Color NEXT_PLANE_COLOR = YELLOW;
-const Color IN_VERTEX_COLOR = LIGHT_BLUE;
-const Color OUT_VERTEX_COLOR = ORANGE;
+const Color BACKGROUND_COLOR = BLACK;
+const Color PLANE_COLOR = GREEN;
+const Color NEXT_PLANE_COLOR = RED;
+const Color IN_VERTEX_COLOR = DARK_GREEN;
+const Color OUT_VERTEX_COLOR = WHITE;
 const double POINT_SIZE = 3.0f;
 const double LINE_WIDTH = 0.3f;
 
@@ -127,12 +127,12 @@ int main() {
         if(MANUAL_STEP)
             DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
         else
-            DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, OUT_VERTEX_COLOR);
+            DivideOutsideGPU(disShader, polyhedron, inside, outside, IN_VERTEX_COLOR, IN_VERTEX_COLOR);
     else
         if(MANUAL_STEP)
             DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
         else
-            DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, OUT_VERTEX_COLOR);
+            DivideOutside(polyhedron, inside, outside, IN_VERTEX_COLOR, IN_VERTEX_COLOR);
 
     if(PRE_CALCULATE)
     {
@@ -298,8 +298,8 @@ int main() {
             else
             {
                 FP = GetFurthestPoint(polyhedron, outside);
-                NextPolyhedron(polyhedron, *FP, inside, MINT, YELLOW);
-                DivideOutside(polyhedron, inside, outside, ORANGE, LIGHT_BLUE);
+                NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, NEXT_PLANE_COLOR);
+                DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
             }
 
 

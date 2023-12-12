@@ -5,6 +5,7 @@
 #include <iostream>
 
 enum Color {
+    BLACK,
     ORANGE,
     MINT,
     LIGHT_BLUE,
@@ -15,12 +16,15 @@ enum Color {
     WHITE,
     DARK_MINT,
     DARK_ORANGE,
+    DARK_GREEN,
 };
 
 std::tuple<float, float, float, float> getColor(Color c)
 {
     switch(c)
     {
+        case BLACK:
+            return std::make_tuple(0.0f, 0.0f, 0.0f, 1.0f);
         case ORANGE:
             return std::make_tuple(1.0f, 0.5f, 0.2f, 1.0f);
         case MINT:
@@ -41,6 +45,8 @@ std::tuple<float, float, float, float> getColor(Color c)
             return std::make_tuple(0.2f, 0.3f, 0.3f, 1.0f);
         case DARK_ORANGE:
             return std::make_tuple(0.5f, 0.2f, 0.0f, 1.0f);
+        case DARK_GREEN:
+            return std::make_tuple(0.2f, 0.4f, 0.1f, 1.0f);
     }
 }
 
