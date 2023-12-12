@@ -13,7 +13,7 @@
 #include "custom/shader.hpp"
 
 //Config
-const int NUMBER_OF_VERTEX = 10000000;
+const int NUMBER_OF_VERTEX = 100;
 const bool USE_GPU = true;
 const bool MANUAL_STEP = false;
 const bool PRE_CALCULATE = false;
@@ -124,15 +124,19 @@ int main() {
         CreateSimplex(polyhedron, points, PLANE_COLOR);
 
     if(USE_GPU)
-        if(MANUAL_STEP)
+        if(PRE_CALCULATE)
+            DivideOutsideGPU(disShader, polyhedron, inside, outside, IN_VERTEX_COLOR, IN_VERTEX_COLOR);
+        else if(MANUAL_STEP)
             DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
         else
-            DivideOutsideGPU(disShader, polyhedron, inside, outside, IN_VERTEX_COLOR, IN_VERTEX_COLOR);
+            DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
     else
-        if(MANUAL_STEP)
+        if(PRE_CALCULATE)
+            DivideOutsideGPU(disShader, polyhedron, inside, outside, IN_VERTEX_COLOR, IN_VERTEX_COLOR);
+        else if(MANUAL_STEP)
             DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
         else
-            DivideOutside(polyhedron, inside, outside, IN_VERTEX_COLOR, IN_VERTEX_COLOR);
+            DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, IN_VERTEX_COLOR);
 
     if(PRE_CALCULATE)
     {
@@ -155,14 +159,14 @@ int main() {
                 NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, PLANE_COLOR);
                 eTime = glfwGetTime();
                 sTime = glfwGetTime();
-                DivideOutsideGPU(disShader, polyhedron, inside, outside, OUT_VERTEX_COLOR, OUT_VERTEX_COLOR);
+                DivideOutsideGPU(disShader, polyhedron, inside, outside, IN_VERTEX_COLOR, IN_VERTEX_COLOR);
                 eTime = glfwGetTime();
             }
             else
             {
                 FP = GetFurthestPoint(polyhedron, outside);
                 NextPolyhedron(polyhedron, *FP, inside, PLANE_COLOR, PLANE_COLOR);
-                DivideOutside(polyhedron, inside, outside, OUT_VERTEX_COLOR, OUT_VERTEX_COLOR);
+                DivideOutside(polyhedron, inside, outside, IN_VERTEX_COLOR, IN_VERTEX_COLOR);
 
             }
         }
@@ -305,15 +309,12 @@ int main() {
 
             lines.clear();
             planes.clear();
-
-            if(MANUAL_STEP)
+            vertices.clear();
+            for(Vertex p : points)
             {
-                vertices.clear();
-                for(Vertex p : points)
-                {
-                    p.draw(vertices);
-                }
+                p.draw(vertices);
             }
+
 
             for(Plane p : polyhedron)
             {
