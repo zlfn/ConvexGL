@@ -15,3 +15,4 @@ GPGPU를 이용한 3D Convex Hull과 응용.
 
 ### 연구 결과
 * [상반기 보고서](Report.pdf)
+* [하반기 보고서](Report2.pdf)
