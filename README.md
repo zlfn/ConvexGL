@@ -1,9 +1,10 @@
 ## Convex Hull with GPGPU
 ![image](./images/convex.png)
 
-경기북과학고등학교 2023학년도 창의 개인 연구, 졸업 심화 연구로 진행할 예정인 
+경기북과학고등학교 2023학년도 창의 개인 연구, 졸업 심화 연구로 진행한
 
-GPGPU를 이용한 3D Convex Hull과 응용.
+OpenGL GPGPU를 이용한 3D Convex Hull.
+
 ### 실행 방법
 * 소스코드의 실행을 위해 GLAD, GLM을 include 폴더 안에, `glad.c`를 루트폴더에 추가해야 합니다.
   * [glm 다운로드](https://github.com/g-truc/glm), [glad 다운로드](https://glad.dav1d.de/)
